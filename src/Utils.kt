@@ -2,8 +2,11 @@ import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 
-fun readInput(name: String) = File("src", "$name.txt")
-    .readLines()
+fun readInput(name: String, testData: Boolean = false): List<String> {
+    val filename = if (testData) "data_test.txt" else "data.txt"
+    return File("src/$name", filename)
+        .readLines()
+}
 
 fun String.md5() = BigInteger(1, MessageDigest.getInstance("MD5").digest(toByteArray()))
     .toString(16)

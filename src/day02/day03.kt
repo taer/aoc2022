@@ -1,4 +1,6 @@
-import java.lang.RuntimeException
+package day02
+
+import readInput
 
 enum class RPS(val value: Int) {
     ROCK(1),
@@ -32,7 +34,7 @@ fun score(us: RPS, them: RPS): Result {
         }
     }
 }
-data class Moves(val their:RPS, val ours: RPS)
+data class Moves(val their: RPS, val ours: RPS)
 fun translateInput(input: List<String>): List<Moves> {
     return input.map { it.split(" ") }.map {
         val theirMove = translate(it[0])
@@ -84,8 +86,8 @@ fun main() {
         return calcWin(newMoves)
     }
 
-    val testInput = readInput("Day02_test")
-    val input = readInput("Day02")
+    val testInput = readInput("day02", true)
+    val input = readInput("day02")
 
     check(part1(testInput) == 15)
     println(part1(input))

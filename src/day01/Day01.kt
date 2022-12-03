@@ -1,3 +1,8 @@
+package day01
+
+import readInput
+import split
+
 fun main() {
     fun sumElves(input: List<String>): List<Int> {
         return input.asSequence()
@@ -16,11 +21,11 @@ fun main() {
         return elves.sortedDescending().take(3).sum()
     }
 
-    val testInput = readInput("Day01_test")
+    val testInput = readInput("day01", true)
     check(part1(testInput) == 24000)
     check(part2(testInput) == 45000)
 
-    val input = readInput("Day01")
+    val input = readInput("day01",)
     println(part1(input))
     println(part2(input))
 }
