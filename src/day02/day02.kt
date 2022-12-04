@@ -49,20 +49,17 @@ fun calcWin(input: List<Moves>) = input.sumOf { (theirMove, ourMove) ->
 
 
 fun main() {
-    fun loseTo(input: RPS): RPS {
-        return when (input){
-            RPS.ROCK -> RPS.Scissors
-            RPS.PAPER -> RPS.ROCK
-            RPS.Scissors -> RPS.PAPER
-        }
+    fun loseTo(input: RPS): RPS = when (input){
+        RPS.ROCK -> RPS.Scissors
+        RPS.PAPER -> RPS.ROCK
+        RPS.Scissors -> RPS.PAPER
     }
-    fun winTo(input: RPS): RPS {
-        return when (input){
-            RPS.ROCK -> RPS.PAPER
-            RPS.PAPER -> RPS.Scissors
-            RPS.Scissors -> RPS.ROCK
-        }
+    fun winTo(input: RPS): RPS = when (input){
+        RPS.ROCK -> RPS.PAPER
+        RPS.PAPER -> RPS.Scissors
+        RPS.Scissors -> RPS.ROCK
     }
+    fun tieTo(input: RPS): RPS = input
     fun part1(input: List<String>): Int {
         val inputData = translateInput(input)
         return calcWin(inputData)
@@ -77,11 +74,12 @@ fun main() {
                 RPS.Scissors -> Result.Win
             }
             val ourNewMove = when (desiredOutcome) {
-                Result.Lose -> loseTo((it.their))
-                Result.Tie -> it.their
-                Result.Win -> winTo(it.their)
+                Result.Lose -> ::loseTo
+                Result.Tie -> ::tieTo
+                Result.Win -> ::winTo
             }
-            it.copy(ours = ourNewMove)
+
+            it.copy(ours = ourNewMove(it.their))
         }
         return calcWin(newMoves)
     }
