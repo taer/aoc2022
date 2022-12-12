@@ -1,82 +1,91 @@
-package day09
+package day10
 
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.reduce
+import kotlinx.coroutines.flow.toList
+import kotlinx.coroutines.flow.withIndex
+import kotlinx.coroutines.runBlocking
 import readInput
-import java.io.File
-import kotlin.math.abs
 
-fun main() {
+suspend fun main() {
 
-    data class Location(var x: Int = 0, var y: Int = 0)
-
-    fun Location.move(direction: String) {
-        when (direction) {
-            "U" -> y++
-            "D" -> y--
-            "L" -> x--
-            "R" -> x++
-        }
-    }
-
-    fun Location.touching(other: Location): Boolean {
-        return abs(this.x - other.x) <= 1 && abs(this.y - other.y) <= 1
-    }
-
-    fun Location.follow(head: Location) {
-        val tail = this
-        if (head == tail) {
-            return
-        }
-        if (!head.touching(tail)) {
-            if (head.x > tail.x) tail.x++
-            if (head.x < tail.x) tail.x--
-            if (head.y > tail.y) tail.y++
-            if (head.y < tail.y) tail.y--
-        }
-    }
-
-    fun part1(input: List<String>): Int {
-        val tailLocations = hashSetOf<Location>()
-        val snake = List(2) { Location() }
-        input.forEach {
-            val (direction, count) = it.split(" ")
-            repeat(count.toInt()) {
-                snake.windowed(2) {
-                    it[0].move(direction)
-                    it[1].follow(it[0])
+    fun simulator(input: List<String>): Flow<Int> {
+        val dataValue = flow {
+            var data = 1
+            input.forEach { cmd ->
+                emit(data)
+                when (cmd) {
+                    "noop" -> {}
+                    else -> {
+                        emit(data)
+                        val amount = cmd.split(" ")[1].toInt()
+                        data += amount
+                    }
                 }
-                tailLocations.add(snake.last().copy())
             }
         }
-        return tailLocations.size
+        return dataValue
     }
 
-    fun part2(input: List<String>): Int {
-        val tailLocations = hashSetOf<Location>()
-        val snake = List(10) { Location() }
-        input.forEach {
-            val (direction, count) = it.split(" ")
-            repeat(count.toInt()) {
-                snake.first().move(direction)
-                snake.windowed(2) {
-                    it[1].follow(it[0])
+    suspend fun part1(input: List<String>): Int {
+        val dataValue = simulator(input)
+        return dataValue.withIndex().filter { iv ->
+            val cycle = iv.index + 1
+            (cycle - 20) % 40 == 0
+        }.map {
+            (it.index + 1) * it.value
+        }.reduce { x, y ->
+            x + y
+        }
+    }
+
+    fun part2(input: List<String>): Flow<String> {
+        val dataValue = simulator(input)
+
+        return flow {
+            dataValue.withIndex().collect { iv ->
+                val cycle = iv.index + 1
+                val pencilLocation = (cycle - 1) % 40
+                val xReg = iv.value
+
+                val sprintLocation = xReg - 1..xReg + 1
+                val toDraw = if (pencilLocation in sprintLocation) "#" else "."
+                emit(toDraw)
+
+                if (cycle % 40 == 0) {
+                    emit("\n")
                 }
-                tailLocations.add(snake.last().copy())
             }
         }
-        return tailLocations.size
     }
 
-    val testInput = readInput("day09", true)
-    val testInput2 = File("src/${"day09"}", "data_test2.txt").readLines()
-    val input = readInput("day09")
-    check(part1(testInput) == 13)
-    check(part2(testInput2) == 36)
+    val testInput = readInput("day10", true)
+    val input = readInput("day10")
+    check(part1(testInput) == 13140)
+    part2(testInput).collect(::print)
+    println()
 
 
     println(part1(input))
-    println(part2(input))
-    check(part1(input) == 6522)
-    check(part2(input) == 2717)
+    part2(input).collect(::print)
+
+    check(part1(input) == 11960)
+    val part2 = part2(input).toList().joinToString("")
+    check(
+        part2 == """
+    ####...##..##..####.###...##..#....#..#.
+    #.......#.#..#.#....#..#.#..#.#....#..#.
+    ###.....#.#....###..#..#.#....#....####.
+    #.......#.#....#....###..#.##.#....#..#.
+    #....#..#.#..#.#....#....#..#.#....#..#.
+    ####..##...##..#....#.....###.####.#..#.
+    
+    """.trimIndent()
+    )
 }
 
 
