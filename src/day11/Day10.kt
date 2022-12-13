@@ -3,13 +3,13 @@ package day11
 import java.io.File
 import java.lang.IllegalStateException
 
-typealias Operation = (Int) -> Int
-typealias Test = (Int) -> Boolean
+typealias Operation = (Long) -> Long
+typealias Test = (Long) -> Boolean
 typealias Target = (Boolean) -> Int
 
 suspend fun main() {
 
-    data class Monkey(val number: Int, val items: MutableList<Int>, val operation: Operation, val test: Test, val target: Target )
+    data class Monkey(val number: Int, val items: MutableList<Long>, val operation: Operation, val test: Test, val target: Target )
     val monkey = """\s*Monkey (\d+):$""".toRegex()
     val items = """\s*Starting items: (.*)$""".toRegex()
     val operation = """\s*Operation: new = old ([+*]) (.*)$""".toRegex()
@@ -27,8 +27,8 @@ suspend fun main() {
         val (falseTarget) = thefalse.matchEntire(lines[5])!!.destructured
         println("Done w/ monkey $monkeyNum ")
 
-        val addOperator = { x: Int, y: Int -> x + y }
-        val mulOperator = { x: Int, y: Int -> x * y }
+        val addOperator = { x: Long, y: Long -> x + y }
+        val mulOperator = { x: Long, y: Long -> x * y }
 
         val op = when(operator){
             "+" -> addOperator
@@ -36,23 +36,23 @@ suspend fun main() {
             else -> throw IllegalStateException("Unknown operator $operator")
         }
         val operation= if (target == "old") {
-            { x: Int ->
+            { x: Long ->
                 op(x, x)
             }
         } else {
-            val toInt = target.toInt()
-            ({ x: Int ->
+            val toInt = target.toLong()
+            ({ x: Long ->
                 op(x, toInt)
             })
         }
         val regex = """,\s+""".toRegex()
         val items = itemlist.split(regex)
-            .map { it.toInt() }
-        val test = divisibleBy.toInt()
+            .map { it.toLong() }
+        val test = divisibleBy.toLong()
         val trueMonkey = trueTaget.toInt()
         val falseMonkey = falseTarget.toInt()
         val testFunc = {
-                value: Int -> value%test == 0
+                value: Long -> value%test == 0L
         }
         val results = {
                 result: Boolean -> if(result)trueMonkey else falseMonkey
@@ -64,8 +64,8 @@ suspend fun main() {
         monkeys: List<Monkey>,
         iterations: Int,
         worryRuduction: Int,
-    ): List<Int> {
-        val inspections = List(monkeys.size) { 0 }.toMutableList()
+    ): List<Long> {
+        val inspections = List(monkeys.size) { 0L }.toMutableList()
         repeat(iterations) {
             monkeys.forEach { monkey ->
                 while (monkey.items.isNotEmpty()) {
@@ -73,16 +73,17 @@ suspend fun main() {
                     val item = monkey.items.removeFirst()
                     val worry = monkey.operation(item)
                     val reducedWorry = worry / worryRuduction
+
                     val result = monkey.test(reducedWorry)
                     val tossTo = monkey.target(result)
                     monkeys[tossTo].items.add(reducedWorry)
                 }
 
             }
-    //            println("After round $it, the monkeys are holding items with these worry levels:")
-    //            monkeys.forEach { monkey ->
-    //                println("Monkey ${monkey.number}: ${monkey.items.joinToString()}")
-    //            }
+                println("After round $it, the monkeys are holding items with these worry levels:")
+                monkeys.forEach { monkey ->
+                    println("Monkey ${monkey.number}: ${monkey.items.joinToString()}")
+                }
         }
         return inspections
     }
@@ -96,14 +97,14 @@ suspend fun main() {
         return monkeys
     }
 
-    suspend fun part1(input: String): Int {
+    suspend fun part1(input: String): Long {
         val monkeys = parseMonkeys(input)
 
         val inspections = monkeyIteration(monkeys, 20, 3)
 
         val top2 = inspections.toList().sortedDescending().take(2)
         val l = top2[0] * top2[1]
-        return l.toInt()
+        return l
     }
 
     fun part2(input: String): Long {
@@ -112,13 +113,13 @@ suspend fun main() {
         val inspections = monkeyIteration(monkeys, 10000, 1)
 
         val top2 = inspections.toList().sortedDescending().take(2)
-        val l = top2[0].toLong() * top2[1]
+        val l = top2[0] * top2[1]
         return l
     }
 
     val testInput = File("src/${"day11"}", "data_test.txt").readText()
     val input = File("src/${"day11"}", "data.txt").readText()
-    check(part1(testInput) == 10605)
+    check(part1(testInput) == 10605L)
     check(part2(testInput) == 2713310158L)
 
 
