@@ -9,7 +9,7 @@ typealias Target = (Boolean) -> Int
 
 suspend fun main() {
 
-    data class Monkey(val number: Int, val items: MutableList<Long>, val operation: Operation, val test: Test, val target: Target )
+    data class Monkey(val number: Int, val items: MutableList<Long>, val operation: Operation, val division: Long, val test: Test, val target: Target )
     val monkey = """\s*Monkey (\d+):$""".toRegex()
     val items = """\s*Starting items: (.*)$""".toRegex()
     val operation = """\s*Operation: new = old ([+*]) (.*)$""".toRegex()
@@ -49,15 +49,16 @@ suspend fun main() {
         val items = itemlist.split(regex)
             .map { it.toLong() }
         val test = divisibleBy.toLong()
+
         val trueMonkey = trueTaget.toInt()
         val falseMonkey = falseTarget.toInt()
         val testFunc = {
-                value: Long -> value%test == 0L
+                value: Long -> value % test == 0L
         }
         val results = {
                 result: Boolean -> if(result)trueMonkey else falseMonkey
         }
-        return Monkey(monkeyNum.toInt(), items.toMutableList(),operation, testFunc, results)
+        return Monkey(monkeyNum.toInt(), items.toMutableList(),operation, test , testFunc, results)
     }
 
     fun monkeyIteration(
@@ -65,6 +66,7 @@ suspend fun main() {
         iterations: Int,
         worryRuduction: Int,
     ): List<Long> {
+        val magic = monkeys.map { it.division }.reduce{x,y->x*y}
         val inspections = List(monkeys.size) { 0L }.toMutableList()
         repeat(iterations) {
             monkeys.forEach { monkey ->
@@ -72,7 +74,7 @@ suspend fun main() {
                     inspections[monkey.number]++
                     val item = monkey.items.removeFirst()
                     val worry = monkey.operation(item)
-                    val reducedWorry = worry / worryRuduction
+                    val reducedWorry = (worry % magic )/ worryRuduction
 
                     val result = monkey.test(reducedWorry)
                     val tossTo = monkey.target(result)
@@ -124,7 +126,7 @@ suspend fun main() {
 
 
     println(part1(input))
-//    println(part2(input))
+    println(part2(input))
 
 //    check(part1(input) == 11960)
 //    check(part2(input) == 11960)
