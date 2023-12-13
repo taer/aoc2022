@@ -119,7 +119,7 @@ suspend fun main() {
         return l
     }
 
-    val testInput = File("src/${"day11"}", "data_test.txt").readText()
+    val testInput = File(/* parent = */ "src/${"day11"}", /* child = */ "data_test.txt").readText()
     val input = File("src/${"day11"}", "data.txt").readText()
     check(part1(testInput) == 10605L)
     check(part2(testInput) == 2713310158L)
